@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome</title>
+</head>
+<body>
+
+<div id="box">
+    <input class="input" id="roomId" placeholder="room id">
+    <input class="input" id="name" placeholder="name">
+    <div id="buttons">
+        <button class="button" id="create">Create Room</button>
+        <button class="button" id="join">Join Room</button>
+    </div>
+</div>
+
+</body>
+<style>
+    body {
+        width: 100vw;
+        height: 100vh;
+        padding: 0;
+        margin: 0;
+    }
+
+    #box {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+
+    .input {
+        display: block;
+        margin: 5px;
+        width: 20%;
+        height: 20px;
+        padding: 10px;
+        border-width: 1px;
+        border-color: #D0D0D0;
+        border-radius: 5px;
+        -webkit-box-shadow: 5px 3px 9px -1px rgba(0, 0, 0, 0.2);
+        box-shadow: 5px 3px 9px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    #buttons {
+        margin-top: 20px;
+    }
+
+    #create {
+        margin-right: 10px;
+    }
+
+    .button {
+        appearance: none;
+        background-color: #FAFBFC;
+        border: 1px solid rgba(27, 31, 35, 0.15);
+        border-radius: 6px;
+        box-shadow: rgba(27, 31, 35, 0.04) 0 1px 0, rgba(255, 255, 255, 0.25) 0 1px 0 inset;
+        box-sizing: border-box;
+        color: #24292E;
+        cursor: pointer;
+        display: inline-block;
+        font-family: -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 20px;
+        list-style: none;
+        padding: 6px 16px;
+        position: relative;
+        transition: background-color 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+        vertical-align: middle;
+        white-space: nowrap;
+        word-wrap: break-word;
+    }
+
+    .button:hover {
+        background-color: #F3F4F6;
+        text-decoration: none;
+        transition-duration: 0.1s;
+    }
+
+    .button:disabled {
+        background-color: #FAFBFC;
+        border-color: rgba(27, 31, 35, 0.15);
+        color: #959DA5;
+        cursor: default;
+    }
+
+    .button:active {
+        background-color: #EDEFF2;
+        box-shadow: rgba(225, 228, 232, 0.2) 0 1px 0 inset;
+        transition: none 0s;
+    }
+
+    .button:focus {
+        outline: 1px transparent;
+    }
+
+    .button:before {
+        display: none;
+    }
+
+</style>
+<script>
+    const roomIdInput = document.getElementById("roomId");
+    const nameInput = document.getElementById("name");
+    const createBtn = document.getElementById("create");
+    const joinBtn = document.getElementById("join");
+
+
+    createBtn.onclick = async (ev) => {
+        const name = nameInput.value;
+        if (name.length === 0) {
+            ev.preventDefault()
+            return;
+        }
+
+        const response = await fetch("/room", {
+            method: "post",
+        }).then(value => value.json());
+        const roomId = response.room_id;
+        window.location.replace(`/room?roomId=${roomId}&name=${name}`)
+    }
+
+    joinBtn.onclick = ev => {
+        const name = nameInput.value;
+        const roomId = roomIdInput.value;
+        if (name.length === 0 || roomId.length === 0) {
+            ev.preventDefault()
+            return;
+        }
+        window.location.replace(`/room?roomId=${roomId.trim()}&name=${name}`)
+    }
+
+
+</script>
+</html>

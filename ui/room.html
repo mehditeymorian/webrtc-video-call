@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Room</title>
+</head>
+<body>
+<div id="videos"></div>
+</body>
+<style>
+    #videos{
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(20%,1fr));
+        gap: 10px;
+        grid-auto-rows: minmax(min-content, auto);
+    }
+
+    .video-container{
+        height: fit-content;
+        -webkit-box-shadow: -3px -1px 7px -2px #000000;
+        box-shadow: -3px -1px 7px -2px #000000;
+    }
+
+    .video{
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .name{
+        width: 100%;
+        padding: 10px;
+        color: white;
+        background-color: brown;
+    }
+
+</style>
+<script>
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const params = Object.fromEntries(urlSearchParams.entries());
+    const roomId = params.roomId;
+    const name = params.name;
+    let myId = "";
+    let localStream = null;
+    const connections = {}
+    console.log(name, roomId);
+    const videosContainer = document.getElementById("videos");
+
+    let ws = new WebSocket(`ws://127.0.0.1:8080/ws/room/${roomId}`);
+
+    const createRTCPeer = (urls) => {
+        const servers = {
+            iceServers: [
+                {
+                    urls: urls,
+                },
+            ],
+        };
+        return new RTCPeerConnection(servers)
+    }
+
+    const createOffer = (destination, sdp) => JSON.stringify({
+        type: "sdp-offer",
+        peer_name: name,
+        payload: {
+            destination_id: destination,
+            source_id: myId,
+            sdp: sdp
+        }
+    });
+
+    const createAnswer = (destination, sdp) => JSON.stringify({
+        type: "sdp-answer",
+        peer_name: name,
+        payload: {
+            destination_id: destination,
+            source_id: myId,
+            sdp: sdp
+        }
+    });
+
+    const createIceCandidate = (destination, candidate) => JSON.stringify({
+        type: "ice-candidate",
+        peer_name: name,
+        payload: {
+            destination_id: destination,
+            source_id: myId,
+            ice_candidate: candidate
+        }
+    });
+
+    const addVideo = (name, id, stream, mute = false) => {
+        let divElement = document.createElement("div");
+        let videoElement = document.createElement("video");
+        let nameElement = document.createElement("a");
+
+        divElement.className = "video-container";
+        divElement.id = id;
+
+        videoElement.className = "video";
+        videoElement.srcObject = stream;
+        videoElement.controls = false;
+        videoElement.autoplay = true;
+        videoElement.muted = mute;
+
+        nameElement.className = "name";
+        nameElement.innerHTML = name;
+
+        divElement.appendChild(videoElement);
+        divElement.appendChild(nameElement);
+        videosContainer.appendChild(divElement);
+    }
+
+    const onSignal = async (ev) => {
+        const data = JSON.parse(ev.data);
+        const type = data.type;
+        const payload = data.payload;
+        console.log(connections);
+
+        switch (type) {
+            case "join-response":
+                console.log("join-response: ", payload)
+                myId = payload;
+                break;
+            case "new-peer":
+                console.log("new-peer")
+
+                let pc = createRTCPeer(['stun:stun1.l.google.com:19302', "stun:stun2.l.google.com:19302"]);
+                localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+                const remoteStream = new MediaStream();
+                pc.ontrack = ev => ev.streams[0].getTracks().forEach(track => remoteStream.addTrack(track));
+
+                connections[payload.id] = {
+                    pc: pc,
+                    candidates: []
+                };
+
+                pc.onicecandidate = ev => {
+                    if (ev.candidate) {
+                        connections[payload.id].candidates.push(JSON.stringify(ev.candidate.toJSON()));
+                    }
+                };
+
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+
+                const offerSdp = btoa(JSON.stringify(pc.localDescription));
+                ws.send(createOffer(payload.id, offerSdp));
+
+
+                addVideo(payload.name, payload.id, remoteStream);
+                break;
+            case "sdp-offer":
+                console.log("sdp-offer: ", payload)
+
+                let pc2 = createRTCPeer(['stun:stun3.l.google.com:19302', "stun:stun4.l.google.com:19302"]);
+                localStream.getTracks().forEach(track => pc2.addTrack(track, localStream));
+                const remoteStream2 = new MediaStream();
+                pc2.ontrack = ev => ev.streams[0].getTracks().forEach(track => remoteStream2.addTrack(track));
+
+                pc2.onicecandidate = ev => {
+                    console.log("onIceCandidate")
+                    ev.candidate && ws.send(createIceCandidate(payload.source_id, JSON.stringify(ev.candidate.toJSON())));
+                };
+
+                await pc2.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(payload.sdp))))
+
+                const answer = await pc2.createAnswer();
+                await pc2.setLocalDescription(answer);
+
+                const answerEncoded = btoa(JSON.stringify(pc2.localDescription));
+                ws.send(createAnswer(payload.source_id, answerEncoded));
+
+
+                connections[payload.source_id] = {
+                    pc: pc2
+                };
+                addVideo(data.peer_name, payload.source_id, remoteStream2);
+                break;
+            case "sdp-answer":
+                console.log("sdp-answer:", payload)
+                let answerSdp = new RTCSessionDescription(JSON.parse(atob(payload.sdp)));
+                await connections[payload.source_id].pc.setRemoteDescription(answerSdp);
+                console.log("candidates to send: ", connections[payload.source_id].candidates.length);
+                connections[payload.source_id].candidates.forEach(value => ws.send(createIceCandidate(payload.source_id, value)));
+                break;
+            case "ice-candidate":
+                console.log("ice-candidate: ", payload);
+                await connections[payload.source_id].pc.addIceCandidate(JSON.parse(payload.ice_candidate))
+                break
+            case "peer-leave":
+                videosContainer.removeChild(document.getElementById(payload))
+                connections[payload].close()
+                connections[payload] = undefined;
+                break
+            case "room-not-found":
+                window.location.replace(`/not-found.html`)
+                ws.close()
+                break
+        }
+    };
+
+
+    ws.onopen = async ev => {
+        console.log("open");
+        localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+        addVideo(name, myId, localStream, true);
+        ws.send(JSON.stringify({
+            type: "join-request",
+            peer_name: name,
+        }));
+    }
+    ws.onclose = ev => console.log("close");
+    ws.onerror = ev => console.log("error", ev);
+    ws.onmessage = onSignal;
+</script>
+</html>
