@@ -6,8 +6,8 @@ import (
 	"math/rand"
 	"time"
 
-	"hermes/internal/call/event"
-	"hermes/internal/model"
+	"github.com/mehditeymorian/webrtc-video-call/internal/call/event"
+	"github.com/mehditeymorian/webrtc-video-call/internal/model"
 
 	"github.com/gofiber/websocket/v2"
 )

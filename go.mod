@@ -1,4 +1,4 @@
-module hermes
+module github.com/mehditeymorian/webrtc-video-call
 
 go 1.17
 

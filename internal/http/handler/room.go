@@ -4,11 +4,11 @@ import (
 	"log"
 	"net/http"
 
-	"hermes/internal/call"
-	"hermes/internal/call/signal"
-	"hermes/internal/call/signal/request"
-	"hermes/internal/call/signal/response"
-	"hermes/internal/store"
+	"github.com/mehditeymorian/webrtc-video-call/internal/call"
+	"github.com/mehditeymorian/webrtc-video-call/internal/call/signal"
+	"github.com/mehditeymorian/webrtc-video-call/internal/call/signal/request"
+	"github.com/mehditeymorian/webrtc-video-call/internal/call/signal/response"
+	"github.com/mehditeymorian/webrtc-video-call/internal/store"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"

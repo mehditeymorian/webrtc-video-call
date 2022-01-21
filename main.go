@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"hermes/internal/http/handler"
-	"hermes/internal/store"
+	"github.com/mehditeymorian/webrtc-video-call/internal/http/handler"
+	"github.com/mehditeymorian/webrtc-video-call/internal/store"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"

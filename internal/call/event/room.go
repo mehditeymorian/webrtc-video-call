@@ -3,9 +3,9 @@ package event
 import (
 	"log"
 
-	"hermes/internal/call/signal"
-	"hermes/internal/call/signal/response"
-	"hermes/internal/model"
+	"github.com/mehditeymorian/webrtc-video-call/internal/call/signal"
+	"github.com/mehditeymorian/webrtc-video-call/internal/call/signal/response"
+	"github.com/mehditeymorian/webrtc-video-call/internal/model"
 
 	"github.com/gofiber/fiber/v2"
 )

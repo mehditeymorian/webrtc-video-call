@@ -3,11 +3,11 @@ package call
 import (
 	"fmt"
 
-	"hermes/internal/call/signal"
-	"hermes/internal/call/signal/request"
-	"hermes/internal/call/signal/response"
-	"hermes/internal/model"
-	"hermes/internal/store"
+	"github.com/mehditeymorian/webrtc-video-call/internal/call/signal"
+	"github.com/mehditeymorian/webrtc-video-call/internal/call/signal/request"
+	"github.com/mehditeymorian/webrtc-video-call/internal/call/signal/response"
+	"github.com/mehditeymorian/webrtc-video-call/internal/model"
+	"github.com/mehditeymorian/webrtc-video-call/internal/store"
 
 	"github.com/gofiber/websocket/v2"
 )

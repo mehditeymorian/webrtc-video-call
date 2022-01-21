@@ -1,8 +1,8 @@
 package store
 
 import (
-	"hermes/internal/model"
-	"hermes/internal/store/collection"
+	"github.com/mehditeymorian/webrtc-video-call/internal/model"
+	"github.com/mehditeymorian/webrtc-video-call/internal/store/collection"
 )
 
 type Store struct {
