@@ -14,7 +14,11 @@ Whenever a peer joins in a room, a join event send to other peers in the room, t
 The new peer answer the offer and a connection takes place(it is a lot more complicated than this, please read official documents and take a look at code to uderstand more). 
 
 # How to run
-The frontend is a collection of html files that are served as static files. build and run the project and you are good to go.
+The frontend is a collection of html files served as static files. build and run the project and you are good to go.
 - Create or Join Room -> `ADDRESS/`
 - Room                -> `ADDRESS/room?roomId=[ROOM-ID]&name=[PEER-NAME]`
 
+# Demo
+![create](https://github.com/mehditeymorian/webrtc-video-call/blob/master/assets/1.png)           
+
+![room](https://github.com/mehditeymorian/webrtc-video-call/blob/master/assets/2.png)
